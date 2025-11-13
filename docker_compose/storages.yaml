@@ -1,0 +1,35 @@
+services:
+  postgres:
+    image: postgres:15-alpine  # Оптимизированный alpine-образ
+    container_name: postgres
+    restart: unless-stopped  # Автоперезапуск при сбоях
+    ports:
+      - "${POSTGRES_PORT}:5432"
+    volumes:
+      - jewerly_postgres_data:/var/lib/postgresql/data
+    env_file:
+      - ../.env
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_HOST: ${POSTGRES_HOST}
+      POSTGRES_PORT: ${POSTGRES_PORT}
+    healthcheck:  # Проверка готовности БД
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 30s
+      timeout: 30s
+      retries: 5
+    networks:
+      - jewerly_backend
+
+volumes:
+  jewerly_postgres_data:
+    name: jewerly_postgres_data
+
+networks:
+  jewerly_backend:
+    driver: bridge
+
+#ALTER USER jewelry_user WITH PASSWORD 'jewelry_pass';
+# почему то не устанавливается пароль при создании контейнера

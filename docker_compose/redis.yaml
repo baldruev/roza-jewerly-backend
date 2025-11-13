@@ -1,0 +1,17 @@
+services:
+  redis:
+    image: redis:8.2-alpine
+    container_name: redis
+    restart: unless-stopped  # Автоперезапуск при сбоях
+    ports:
+      - "${REDIS_PORT}:6379"
+    env_file:
+      - ../.env
+    environment:
+      REDIS_PORT: ${REDIS_PORT}
+    networks:
+      - backend
+
+networks:
+  backend:
+    driver: bridge

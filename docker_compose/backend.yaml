@@ -1,0 +1,61 @@
+services:
+  backend:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+      cache_from:
+        - python:3.11.11-slim
+        - ghcr.io/astral-sh/uv:latest
+    container_name: backend
+    command: >
+      uvicorn backend.core.asgi:application
+      --host 0.0.0.0 --port 8000
+      --workers 4
+      --access-log
+    env_file:
+      - ../.env
+    ports:
+      - "${DJANGO_PORT}:8000"
+    volumes:
+      - jewerly_static_volume:/app/static
+      - jewerly_media_volume:/app/media
+      # Удаляем bind mount кода для production
+      # - ../:/app  # Только для development
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - jewerly_backend
+    # healthcheck:
+    #   test: ["CMD", "curl", "--fail", "http://localhost:8000/health/"]
+    #   interval: 30s
+    #   timeout: 10s
+    #   retries: 3
+    #   start_period: 20s
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 2G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+    # Настройки безопасности
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    tmpfs:
+      - /tmp
+      - /var/tmp
+
+volumes:
+  jewerly_static_volume:
+    name: jewerly_static_volume
+  jewerly_media_volume:
+    name: jewerly_media_volume
+  
+networks:
+  jewerly_backend:
+    driver: bridge
+    name: jewerly_backend_network
