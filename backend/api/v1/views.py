@@ -72,7 +72,7 @@ class ProductViewSet(viewsets.ReadOnlyModelViewSet):
     """
     
     queryset = Product.objects.filter(is_active=True)
-    lookup_field = 'sku'
+    lookup_field = 'id'
     filter_backends = [
         DjangoFilterBackend,
         filters.SearchFilter,
